@@ -1,0 +1,8 @@
+/* If javascript is not enabled, this won't be shown */
+#liveSection {
+	display: none;
+}
+
+canvas {
+	border: none;
+}
