@@ -3,76 +3,85 @@
  */
 
 var interval = null;
-renderDungeon();
+var objs;
 
 
 document.getElementById("liveSection").style.display = "inherit";
 
-function renderDungeon() {
-	const scale = 50;
+const scale = 50;
 
-	var canvas = document.getElementById("dungeonCanvas");
-	canvas.width = 15*scale;
-	canvas.height = 10*scale;
+var canvas = document.getElementById("dungeonCanvas");
+canvas.width = 15*scale;
+canvas.height = 10*scale;
 
-	var size = 2;
+var size = 2;
 
-	var a = buildCell("#0000FF", 0, 0, size*scale, size*scale);
-	var b = buildCell("#FFFF00", 0, 0, size*scale, size*scale);
-	var c = buildCell("#FF0000", 0, 0, size*scale, size*scale);
-	
+var a = buildCell("#0000FF", 0, 0, size*scale, size*scale);
+var b = buildCell("#FFFF00", 0, 0, size*scale, size*scale);
+var c = buildCell("#FF0000", 0, 0, size*scale, size*scale);
 
-	while (anyOverlap([a,b,c])) {
+placeObjs();
+// while (anyOverlap([a,b,c])) {
+// 	newPoints(c,canvas);
+// 	newPoints(b,canvas);
+// 	newPoints(a,canvas);
+// }
+
+var sprite = {
+	width: 50,
+	height: 50,
+	imgW: 160,
+	imgH: 160,
+	cord: {x: 0, y: 0},
+	velocity: {x:0, y:0},
+	pace: 5,
+	img: new Image(),
+	count: 0,
+	offset: 200,
+	draw: function(context) {
+		console.log("Hello");
+		context.drawImage(this.img, this.offset*this.count, 0, this.imgW, this.imgH, this.cord.x, this.cord.y, this.width, this.height);
+		this.count = (this.count + 1)%5;
+	},
+	move: function() {
+		this.cord.x += this.pace*this.velocity.x;
+		this.cord.y += this.pace* this.velocity.y;
+	}
+}
+sprite.img.src = './images/G7.png';
+objs = [a,b,c,sprite];
+// renderCanvas([a,b,c,sprite], canvas);
+requestAnimationFrame(renderCanvas);
+
+// if (interval) clearInterval(interval);
+// interval = setInterval( () => {
+// 	renderCanvas([a,b,c,sprite], canvas);
+// 	// if (count == 0) ctx.drawImage(sprite,0,0,160,182,0,0,160,182);
+// 	// else ctx.drawImage(sprite,200,0,160,182,0,0,160,182);
+// }, 100);
+
+document.addEventListener('keydown', function(event) {
+	if (event.code === "KeyW") sprite.velocity.y = -1;
+	else if (event.code === "KeyS") sprite.velocity.y = 1;
+	else if (event.code === "KeyA") sprite.velocity.x = -1;
+	else if (event.code === "KeyD") sprite.velocity.x = 1;
+});
+
+document.addEventListener('keyup', function(event) {
+	if (event.code === "KeyW") sprite.velocity.y = 0;
+	else if (event.code === "KeyS") sprite.velocity.y = 0;
+	else if (event.code === "KeyA") sprite.velocity.x = 0;
+	else if (event.code === "KeyD") sprite.velocity.x = 0;
+});
+
+function placeObjs() {
+	do {
 		newPoints(c,canvas);
 		newPoints(b,canvas);
 		newPoints(a,canvas);
-	}
-
-	var sprite = {
-		width: 50,
-		height: 50,
-		imgW: 160,
-		imgH: 160,
-		cord: {x: 0, y: 0},
-		velocity: {x:0, y:0},
-		pace: 5,
-		img: new Image(),
-		count: 0,
-		offset: 200,
-		draw: function(context) {
-			context.drawImage(this.img, this.offset*this.count, 0, this.imgW, this.imgH, this.cord.x, this.cord.y, this.width, this.height);
-			this.count = (this.count + 1)%5;
-		},
-		move: function() {
-			this.cord.x += this.pace*this.velocity.x;
-			this.cord.y += this.pace* this.velocity.y;
-		}
-	}
-	sprite.img.src = './images/G7.png';
-
-	renderCanvas([a,b,c,sprite], canvas);
-	
-	if (interval) clearInterval(interval);
-	interval = setInterval( () => {
-		renderCanvas([a,b,c,sprite], canvas);
-		// if (count == 0) ctx.drawImage(sprite,0,0,160,182,0,0,160,182);
-		// else ctx.drawImage(sprite,200,0,160,182,0,0,160,182);
-	}, 100);
-
-	document.addEventListener('keydown', function(event) {
-		if (event.code === "KeyW") sprite.velocity.y = -1;
-		else if (event.code === "KeyS") sprite.velocity.y = 1;
-		else if (event.code === "KeyA") sprite.velocity.x = -1;
-		else if (event.code === "KeyD") sprite.velocity.x = 1;
-	});
-
-	document.addEventListener('keyup', function(event) {
-		if (event.code === "KeyW") sprite.velocity.y = 0;
-		else if (event.code === "KeyS") sprite.velocity.y = 0;
-		else if (event.code === "KeyA") sprite.velocity.x = 0;
-		else if (event.code === "KeyD") sprite.velocity.x = 0;
-	});
+	} while (anyOverlap([a,b,c]));
 }
+
 
 function buildCell(color, x, y, width, height) {
 	return {
@@ -123,7 +132,18 @@ function drawCell(ctx, cell) {
 	ctx.fillRect(cell.x,cell.y,cell.width,cell.height);
 }
 
-function renderCanvas(objs, canvas) {
+var frameCount=0;
+var fps = 20;
+var fCount = Math.floor(60/fps);
+
+function renderCanvas() {
+	frameCount++;
+	if (frameCount < fCount) {
+		requestAnimationFrame(renderCanvas);
+		return;
+	}
+	else frameCount = 0;
+
 	const context = canvas.getContext('2d');
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	context.fillStyle = "#000000";
@@ -133,4 +153,5 @@ function renderCanvas(objs, canvas) {
 		objs[i].move();
 		objs[i].draw(context);
 	}
+	requestAnimationFrame(renderCanvas);
 }
