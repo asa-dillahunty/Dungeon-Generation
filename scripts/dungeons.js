@@ -11,6 +11,8 @@ document.getElementById("liveSection").style.display = "inherit";
 const scale = 50;
 
 var canvas = document.getElementById("dungeonCanvas");
+const context = canvas.getContext('2d');
+context.imageSmoothingEnabled = false;
 canvas.width = 15*scale;
 canvas.height = 10*scale;
 
@@ -20,37 +22,77 @@ var a = buildCell("#0000FF", 0, 0, size*scale, size*scale);
 var b = buildCell("#FFFF00", 0, 0, size*scale, size*scale);
 var c = buildCell("#FF0000", 0, 0, size*scale, size*scale);
 
-placeObjs();
 // while (anyOverlap([a,b,c])) {
 // 	newPoints(c,canvas);
 // 	newPoints(b,canvas);
 // 	newPoints(a,canvas);
 // }
+var keySprite = {
+	width:27,
+	height:90,
+	imgW:9,
+	imgH:30,
+	cord: {x: 0, y: 0},
+	img: new Image(),
+	count: 0,
+	frameCount: 0,
+	offset: 9,
+	frameArr: [0,1,2,1],
+	draw: function() {
+		// 0, 1, 2, 1
+		context.drawImage(this.img, this.offset*(this.frameArr[this.count]), 0, this.imgW, this.imgH, this.cord.x, this.cord.y, this.width, this.height);
+		
+		// This means the key animates at a fifth of the pace of the game clock
+		this.frameCount++;
+		if (this.frameCount < 5) return;
+
+		this.frameCount = 0;
+		this.count = (this.count + 1)%4;
+	},
+	move: function() {}
+};
+keySprite.img.src = './images/K1.png';
 
 var sprite = {
-	width: 50,
-	height: 50,
-	imgW: 160,
-	imgH: 160,
+	width: 75,
+	height: 75,
+	imgW: 32,
+	imgH: 32,
 	cord: {x: 0, y: 0},
-	velocity: {x:0, y:0},
+	velocity: {left:0, right:0, up:0, down:0},
 	pace: 5,
 	img: new Image(),
 	count: 0,
-	offset: 200,
-	draw: function(context) {
-		console.log("Hello");
-		context.drawImage(this.img, this.offset*this.count, 0, this.imgW, this.imgH, this.cord.x, this.cord.y, this.width, this.height);
-		this.count = (this.count + 1)%5;
+	frameCount: 0,
+	offset: 32,
+	facing: 0,
+	draw: function() {
+		// if left facing = 1
+		// if right facing = 0
+		if (this.velocity.left == -1) this.facing = 1;
+		else if (this.velocity.right) this.facing = 0;
+		context.drawImage(this.img, this.offset*this.count, this.offset*this.facing, this.imgW, this.imgH, this.cord.x, this.cord.y, this.width, this.height);
+		
+		// This means the key animates at a fifth of the pace of the game clock
+		this.frameCount++;
+		if (this.frameCount < 5) return;
+
+		this.frameCount = 0;
+		this.count = (this.count + 1)%2;
 	},
 	move: function() {
-		this.cord.x += this.pace*this.velocity.x;
-		this.cord.y += this.pace* this.velocity.y;
+		this.cord.x += this.pace * (this.velocity.right + this.velocity.left);
+		this.cord.y += this.pace * (this.velocity.up + this.velocity.down);
+
+		// some check
+		// this.cord.x -= this.pace * (this.velocity.right + this.velocity.left);
+		// this.cord.y -= this.pace * (this.velocity.up + this.velocity.down);
 	}
 }
-sprite.img.src = './images/G7.png';
-objs = [a,b,c,sprite];
+sprite.img.src = './images/G12.png';
+objs = [a,b,c,sprite,keySprite];
 // renderCanvas([a,b,c,sprite], canvas);
+placeObjs();
 requestAnimationFrame(renderCanvas);
 
 // if (interval) clearInterval(interval);
@@ -61,37 +103,34 @@ requestAnimationFrame(renderCanvas);
 // }, 100);
 
 document.addEventListener('keydown', function(event) {
-	if (event.code === "KeyW") sprite.velocity.y = -1;
-	else if (event.code === "KeyS") sprite.velocity.y = 1;
-	else if (event.code === "KeyA") sprite.velocity.x = -1;
-	else if (event.code === "KeyD") sprite.velocity.x = 1;
+	if (event.code === "KeyW") sprite.velocity.up = -1;
+	else if (event.code === "KeyS") sprite.velocity.down = 1;
+	else if (event.code === "KeyA") sprite.velocity.left = -1;
+	else if (event.code === "KeyD") sprite.velocity.right = 1;
 });
 
 document.addEventListener('keyup', function(event) {
-	if (event.code === "KeyW") sprite.velocity.y = 0;
-	else if (event.code === "KeyS") sprite.velocity.y = 0;
-	else if (event.code === "KeyA") sprite.velocity.x = 0;
-	else if (event.code === "KeyD") sprite.velocity.x = 0;
+	if (event.code === "KeyW") sprite.velocity.up = 0;
+	else if (event.code === "KeyS") sprite.velocity.down = 0;
+	else if (event.code === "KeyA") sprite.velocity.left = 0;
+	else if (event.code === "KeyD") sprite.velocity.right = 0;
 });
 
 function placeObjs() {
 	do {
-		newPoints(c,canvas);
-		newPoints(b,canvas);
-		newPoints(a,canvas);
-	} while (anyOverlap([a,b,c]));
+		for (var i=0;i<objs.length;i++) newPoints(objs[i],canvas);
+	} while (anyOverlap(objs));
 }
 
 
 function buildCell(color, x, y, width, height) {
 	return {
-		x: x,
-		y: y,
+		cord: {x: x, y: y},
 		height: height,
 		width: width,
 		color: color,
-		draw: function (context) {
-			drawCell(context,this);
+		draw: function () {
+			drawCell(this);
 		},
 		move: function(){}
 	};
@@ -113,23 +152,27 @@ function overlap(a, b) {
 	var wO = false;
 	var hO = false;
 
-	if (a.x <= b.x && a.x + a.width >= b.x) wO = true;
-	else if (a.x <= b.x + b.width && a.x + a.width >= b.x + b.width) wO = true;
+	if (a.cord.x <= b.cord.x && a.cord.x + a.width >= b.cord.x) wO = true;
+	else if (a.cord.x <= b.cord.x + b.width && a.cord.x + a.width >= b.cord.x + b.width) wO = true;
 
-	if (a.y <= b.y && a.y + a.height >= b.y) hO = true;
-	else if (a.y <= b.y + b.height && a.y + a.height >= b.y + b.height) hO = true;
+	if (a.cord.y <= b.cord.y && a.cord.y + a.height >= b.cord.y) hO = true;
+	else if (a.cord.y <= b.cord.y + b.height && a.cord.y + a.height >= b.cord.y + b.height) hO = true;
+
+	// console.log(a,b);
+	// console.log("wO",wO);
+	// console.log("hO",hO);
 
 	return wO && hO;
 }
 
 function newPoints(cell, canvas) {
-	cell.y = Math.floor(Math.random()* (canvas.height - cell.height));
-	cell.x = Math.floor(Math.random()* (canvas.width - cell.width));
+	cell.cord.y = Math.floor(Math.random()* (canvas.height - cell.height));
+	cell.cord.x = Math.floor(Math.random()* (canvas.width - cell.width));
 }
 
-function drawCell(ctx, cell) {
-	ctx.fillStyle = cell.color;
-	ctx.fillRect(cell.x,cell.y,cell.width,cell.height);
+function drawCell(cell) {
+	context.fillStyle = cell.color;
+	context.fillRect(cell.cord.x,cell.cord.y,cell.width,cell.height);
 }
 
 var frameCount=0;
@@ -144,14 +187,17 @@ function renderCanvas() {
 	}
 	else frameCount = 0;
 
-	const context = canvas.getContext('2d');
 	context.clearRect(0, 0, canvas.width, canvas.height);
-	context.fillStyle = "#000000";
-	context.fillRect(0,0,canvas.width,canvas.height);
+	context.imageSmoothingEnabled = false;
+	// context.fillStyle = "#000000";
+	// context.fillRect(0,0,canvas.width,canvas.height);
 
 	for (var i=0;i<objs.length;i++) {
 		objs[i].move();
-		objs[i].draw(context);
+		objs[i].draw();
+	}
+	if (overlap(keySprite, sprite)) {
+		placeObjs();
 	}
 	requestAnimationFrame(renderCanvas);
 }
