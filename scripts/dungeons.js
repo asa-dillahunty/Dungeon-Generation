@@ -1,3 +1,4 @@
+var interval = null;
 renderDungeon();
 
 document.getElementById("liveSection").style.display = "inherit";
@@ -16,21 +17,30 @@ function renderDungeon() {
 		y:0,
 		height: size * scale,
 		width: size * scale,
-		color: "#0000FF"
+		color: "#0000FF",
+		draw: function (context) {
+			drawCell(context,this);
+		}
 	};
 	var b = {
 		x:0,
 		y:0,
 		height: size * scale,
 		width: size * scale,
-		color: "#FFFF00"
+		color: "#FFFF00",
+		draw: function (context) {
+			drawCell(context,this);
+		}
 	};
 	var a = {
 		x:0,
 		y:0,
 		height: size * scale,
 		width: size * scale,
-		color: "#FF0000"
+		color: "#FF0000",
+		draw: function (context) {
+			drawCell(context,this);
+		}
 	}
 
 	while (anyOverlap([a,b,c])) {
@@ -39,24 +49,31 @@ function renderDungeon() {
 		newPoints(a,canvas);
 	}
 
-	var ctx = canvas.getContext("2d");
-	ctx.fillStyle = "#000000"; // default to black
+	var sprite = {
+		width: 160,
+		height: 160,
+		imgW: 160,
+		imgH: 160,
+		img: new Image(),
+		count: 0,
+		offset: 200,
+		draw: function(context) {
+			context.drawImage(this.img, this.offset*this.count, 0, this.imgW, this.imgH, 0, 0, this.width, this.height);
+			this.count = (this.count + 1)%5;
+		},
+	}
+	sprite.img.src = './images/G7.png';
 
-	// if (i >= cWidth && i <= cWidth + size && j >= cHeight && j <= cHeight + size) {
-	// 	ctx.fillStyle = "#555555"; // grey?
-	// }
-
-	// else if (i >= bWidth && i <= bWidth + size && j >= bHeight && j <= bHeight + size) {
-	// 	ctx.fillStyle = "#999999"; // grey?
-	// }
+	renderCanvas([a,b,c,sprite], canvas);
 	
-	// flip i and j because I set up my matrix wrong and don't want to fix it
-	ctx.fillRect(0,0,canvas.width,canvas.height);
-
-	drawCell(ctx,c);
-	drawCell(ctx,b);
-	drawCell(ctx,a);
+	if (interval) clearInterval(interval);
+	interval = setInterval( () => {
+		renderCanvas([a,b,c,sprite], canvas);
+		// if (count == 0) ctx.drawImage(sprite,0,0,160,182,0,0,160,182);
+		// else ctx.drawImage(sprite,200,0,160,182,0,0,160,182);
+	}, 300);
 }
+
 
 function anyOverlap(cells) {
 	// test every combination
@@ -91,4 +108,13 @@ function newPoints(cell, canvas) {
 function drawCell(ctx, cell) {
 	ctx.fillStyle = cell.color;
 	ctx.fillRect(cell.x,cell.y,cell.width,cell.height);
+}
+
+function renderCanvas(objs, canvas) {
+	const context = canvas.getContext('2d');
+	context.clearRect(0, 0, canvas.width, canvas.height);
+
+	for (var i=0;i<objs.length;i++) {
+		objs[i].draw(context);
+	}
 }
