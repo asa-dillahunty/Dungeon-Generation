@@ -4,7 +4,7 @@
 
 var interval = null;
 var objs;
-
+var score=0;
 
 document.getElementById("liveSection").style.display = "inherit";
 
@@ -22,108 +22,53 @@ var a = buildCell("#0000FF", 0, 0, size*scale, size*scale);
 var b = buildCell("#FFFF00", 0, 0, size*scale, size*scale);
 var c = buildCell("#FF0000", 0, 0, size*scale, size*scale);
 
-// while (anyOverlap([a,b,c])) {
-// 	newPoints(c,canvas);
-// 	newPoints(b,canvas);
-// 	newPoints(a,canvas);
-// }
-var keySprite = {
-	width:27,
-	height:90,
-	imgW:9,
-	imgH:30,
-	cord: {x: 0, y: 0},
-	img: new Image(),
-	permeable: true,
-	count: 0,
-	frameCount: 0,
-	offset: 9,
-	frameArr: [0,1,2,1],
-	draw: function() {
-		// 0, 1, 2, 1
-		context.drawImage(this.img, this.offset*(this.frameArr[this.count]), 0, this.imgW, this.imgH, this.cord.x, this.cord.y, this.width, this.height);
-		
-		// This means the key animates at a fifth of the pace of the game clock
-		this.frameCount++;
-		if (this.frameCount < 5) return;
+var keySprite = newSprite(9,30,9,30,'./images/K1.png',[0,1,2,1],5,5);
+keySprite.faces = false;
+var ghostSprite = newSprite(scale, scale, 32, 32, './images/G12.png', [0,1], 5, 5);
 
-		this.frameCount = 0;
-		this.count = (this.count + 1)%4;
-	},
-	move: function() {}
-};
-keySprite.img.src = './images/K1.png';
-
-var sprite = {
-	width: 75,
-	height: 75,
-	imgW: 32,
-	imgH: 32,
-	cord: {x: 0, y: 0},
-	velocity: {left:0, right:0, up:0, down:0},
-	pace: 5,
-	img: new Image(),
-	count: 0,
-	frameCount: 0,
-	offset: 32,
-	facing: 0,
-	draw: function() {
-		// if left facing = 1
-		// if right facing = 0
-		if (this.velocity.left == -1) this.facing = 1;
-		else if (this.velocity.right) this.facing = 0;
-		context.drawImage(this.img, this.offset*this.count, this.offset*this.facing, this.imgW, this.imgH, this.cord.x, this.cord.y, this.width, this.height);
-		
-		// This means the key animates at a fifth of the pace of the game clock
-		this.frameCount++;
-		if (this.frameCount < 5) return;
-
-		this.frameCount = 0;
-		this.count = (this.count + 1)%2;
-	},
-	move: function() {
-		this.cord.x += this.pace * (this.velocity.right + this.velocity.left);
-		this.cord.y += this.pace * (this.velocity.up + this.velocity.down);
-
-		for (var i=0;i<objs.length;i++) {
-			if (objs[i] === this || objs[i].permeable) continue;
-			else if (overlap(this,objs[i])) {
-				// TODO:
-				// - fix the problem direction and not stop whole move
-				this.cord.x -= this.pace * (this.velocity.right + this.velocity.left);
-				this.cord.y -= this.pace * (this.velocity.up + this.velocity.down);
-				return;
-			}
-		}
-		// some check
-	}
-}
-sprite.img.src = './images/G12.png';
-objs = [a,b,c,sprite,keySprite];
-// renderCanvas([a,b,c,sprite], canvas);
+objs = [a,b,c,ghostSprite,keySprite];
 placeObjs();
 requestAnimationFrame(renderCanvas);
 
-// if (interval) clearInterval(interval);
-// interval = setInterval( () => {
-// 	renderCanvas([a,b,c,sprite], canvas);
-// 	// if (count == 0) ctx.drawImage(sprite,0,0,160,182,0,0,160,182);
-// 	// else ctx.drawImage(sprite,200,0,160,182,0,0,160,182);
-// }, 100);
-
 document.addEventListener('keydown', function(event) {
+	if (event.code === "KeyW" || event.code === 'ArrowUp') {
+		ghostSprite.velocity.up = -1;
+		keySprite.velocity.up = -1;
+	}
+	else if (event.code === "KeyS" || event.code === "ArrowDown") {
+		ghostSprite.velocity.down = 1;
+		keySprite.velocity.down = 1;
+	}
+	else if (event.code === "KeyA" || event.code === "ArrowLeft") {
+		ghostSprite.velocity.left = -1;
+		keySprite.velocity.left = -1;
+	}
+	else if (event.code === "KeyD" || event.code === "ArrowRight") {
+		ghostSprite.velocity.right = 1;
+		keySprite.velocity.right = 1;
+	}
+	else return;
+
 	event.preventDefault();
-	if (event.code === "KeyW" || event.code === 'ArrowUp') sprite.velocity.up = -1;
-	else if (event.code === "KeyS" || event.code === "ArrowDown") sprite.velocity.down = 1;
-	else if (event.code === "KeyA" || event.code === "ArrowLeft") sprite.velocity.left = -1;
-	else if (event.code === "KeyD" || event.code === "ArrowRight") sprite.velocity.right = 1;
 });
 
 document.addEventListener('keyup', function(event) {
-	if (event.code === "KeyW" || event.code === "ArrowUp") sprite.velocity.up = 0;
-	else if (event.code === "KeyS" || event.code === "ArrowDown") sprite.velocity.down = 0;
-	else if (event.code === "KeyA" || event.code === "ArrowLeft") sprite.velocity.left = 0;
-	else if (event.code === "KeyD" || event.code === "ArrowRight") sprite.velocity.right = 0;
+	if (event.code === "KeyW" || event.code === "ArrowUp") {
+		ghostSprite.velocity.up = 0;
+		keySprite.velocity.up = 0;
+	}
+	else if (event.code === "KeyS" || event.code === "ArrowDown") {
+		ghostSprite.velocity.down = 0;
+		keySprite.velocity.down = 0;
+	}
+	else if (event.code === "KeyA" || event.code === "ArrowLeft") {
+		ghostSprite.velocity.left = 0;
+		keySprite.velocity.left = 0;
+	}
+	else if (event.code === "KeyD" || event.code === "ArrowRight") {
+		ghostSprite.velocity.right = 0;
+		keySprite.velocity.right = 0;
+	}
 });
 
 function placeObjs() {
@@ -132,6 +77,81 @@ function placeObjs() {
 	} while (anyOverlap(objs));
 }
 
+/**
+ * 
+ * @param {Number} spriteWidth Width of the spite to be displayed
+ * @param {Number} spriteHeight Height of the sprite to be drawn
+ * @param {Number} imageWidth Width of the sprite's image
+ * @param {Number} imageHeight Height of the sprite's image
+ * @param {String} imageURL URL of the image
+ * @param {Array} frameArray Array to loop through and let the draw function know what frame to draw and each index
+ * @param {Number} frameRatio how many frames to skip before changing the animation
+ * @param {Number} stepSize Step size of the sprite
+ */
+function newSprite(spriteWidth, spriteHeight, imageWidth, imageHeight, imageURL, frameArray, frameRatio = 0, stepSize = 0) {
+	// newSprite(27,90,9,30,'./images/K1.png',[0,1,2,1],5);
+	var sprite = {
+		permeable: true,
+		width: spriteWidth,
+		height: spriteHeight,
+		imgW: imageWidth,
+		imgH: imageHeight,
+		cord: {x: 0, y: 0},
+		velocity: {left:0,right:0,up:0,down:0},
+		img: new Image(),
+		facing: 0,
+		faces: true,
+		frameCount: 0,
+		frameIndex: 0,
+		frameArr: frameArray,
+		frameRatio: frameRatio,
+		draw: function() {
+			if (this.faces)
+				if (this.velocity.left == -1) this.facing = 1;
+				else if (this.velocity.right) this.facing = 0;
+
+			context.drawImage(this.img, this.imgW*(this.frameArr[this.frameIndex]), this.imgH*this.facing, this.imgW, this.imgH, this.cord.x, this.cord.y, this.width, this.height);
+			
+			// This means the key animates at a fifth of the pace of the game clock
+			this.frameCount++;
+			if (this.frameCount < this.frameRatio) return;
+
+			this.frameCount = 0;
+			this.frameIndex = (this.frameIndex + 1) % this.frameArr.length;
+		},
+		move: function() {
+			if (this.stepSize == 0) return;
+			this.cord.x += this.stepSize * (this.velocity.right + this.velocity.left);
+			this.cord.y += this.stepSize * (this.velocity.up + this.velocity.down);
+
+			for (var i=0;i<objs.length;i++) {
+				if (objs[i] === this || objs[i].permeable) continue;
+				else if (overlap(this,objs[i])) {
+					this.cord.x -= this.stepSize * (this.velocity.right + this.velocity.left);
+					if (!overlap(this,objs[i])) continue;
+					else this.cord.x += this.stepSize * (this.velocity.right + this.velocity.left);
+
+					this.cord.y -= this.stepSize * (this.velocity.up + this.velocity.down);
+					if (!overlap(this,objs[i])) continue;
+					else this.cord.x -= this.stepSize * (this.velocity.right + this.velocity.left);
+				}
+			}
+
+			const w = Math.floor(this.width/this.stepSize);
+			const ws = w*this.stepSize;
+			if (this.cord.x > canvas.width - w) this.cord.x = -ws;
+			else if (this.cord.x < -ws) this.cord.x = canvas.width - w;
+
+			const h = Math.floor (this.height/this.stepSize);
+			const hs = h*this.stepSize;
+			if (this.cord.y > canvas.height - h) this.cord.y = -hs;
+			else if (this.cord.y < -hs) this.cord.y = canvas.height - h;
+		},
+		stepSize: stepSize
+	}
+	sprite.img.src = imageURL;
+	return sprite;
+}
 
 function buildCell(color, x, y, width, height) {
 	return {
@@ -160,15 +180,16 @@ function overlap(a, b) {
 	// a.x to a.x + a.width
 	// b.x to b.x + b.width
 
-	return !( a.cord.x + a.width < b.cord.x || // max a left of min b
-		a.cord.x > b.cord.x + b.width || // min a right of max b
-		a.cord.y > b.cord.y+b.height || // min a above max b
-		a.cord.y+a.height < b.cord.y ); // max a below min b
+	return !( a.cord.x + a.width <= b.cord.x || // max a left of min b
+		a.cord.x >= b.cord.x + b.width || // min a right of max b
+		a.cord.y >= b.cord.y+b.height || // min a above max b
+		a.cord.y+a.height <= b.cord.y ); // max a below min b
 }
 
 function newPoints(cell, canvas) {
-	cell.cord.y = Math.floor(Math.random()* (canvas.height - cell.height));
-	cell.cord.x = Math.floor(Math.random()* (canvas.width - cell.width));
+	// have every point be a multiple of scale
+	cell.cord.y = Math.floor( (Math.random() * (canvas.height - cell.height) ) / scale) * scale;
+	cell.cord.x = Math.floor( (Math.random() * (canvas.width - cell.width) ) / scale) * scale;
 }
 
 function drawCell(cell) {
@@ -190,15 +211,20 @@ function renderCanvas() {
 
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	context.imageSmoothingEnabled = false;
-	// context.fillStyle = "#000000";
-	// context.fillRect(0,0,canvas.width,canvas.height);
 
 	for (var i=0;i<objs.length;i++) {
 		objs[i].move();
 		objs[i].draw();
 	}
-	if (overlap(keySprite, sprite)) {
+	if (overlap(keySprite, ghostSprite)) {
+		score++;
+		updateScore();
 		placeObjs();
 	}
 	requestAnimationFrame(renderCanvas);
+}
+
+function updateScore() {
+	const scoreElem = document.getElementById('score');
+	scoreElem.innerHTML = `Score: ${score}`;
 }
