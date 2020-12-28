@@ -34,6 +34,7 @@ var keySprite = {
 	imgH:30,
 	cord: {x: 0, y: 0},
 	img: new Image(),
+	permeable: true,
 	count: 0,
 	frameCount: 0,
 	offset: 9,
@@ -84,9 +85,17 @@ var sprite = {
 		this.cord.x += this.pace * (this.velocity.right + this.velocity.left);
 		this.cord.y += this.pace * (this.velocity.up + this.velocity.down);
 
+		for (var i=0;i<objs.length;i++) {
+			if (objs[i] === this || objs[i].permeable) continue;
+			else if (overlap(this,objs[i])) {
+				// TODO:
+				// - fix the problem direction and not stop whole move
+				this.cord.x -= this.pace * (this.velocity.right + this.velocity.left);
+				this.cord.y -= this.pace * (this.velocity.up + this.velocity.down);
+				return;
+			}
+		}
 		// some check
-		// this.cord.x -= this.pace * (this.velocity.right + this.velocity.left);
-		// this.cord.y -= this.pace * (this.velocity.up + this.velocity.down);
 	}
 }
 sprite.img.src = './images/G12.png';
@@ -103,17 +112,18 @@ requestAnimationFrame(renderCanvas);
 // }, 100);
 
 document.addEventListener('keydown', function(event) {
-	if (event.code === "KeyW") sprite.velocity.up = -1;
-	else if (event.code === "KeyS") sprite.velocity.down = 1;
-	else if (event.code === "KeyA") sprite.velocity.left = -1;
-	else if (event.code === "KeyD") sprite.velocity.right = 1;
+	event.preventDefault();
+	if (event.code === "KeyW" || event.code === 'ArrowUp') sprite.velocity.up = -1;
+	else if (event.code === "KeyS" || event.code === "ArrowDown") sprite.velocity.down = 1;
+	else if (event.code === "KeyA" || event.code === "ArrowLeft") sprite.velocity.left = -1;
+	else if (event.code === "KeyD" || event.code === "ArrowRight") sprite.velocity.right = 1;
 });
 
 document.addEventListener('keyup', function(event) {
-	if (event.code === "KeyW") sprite.velocity.up = 0;
-	else if (event.code === "KeyS") sprite.velocity.down = 0;
-	else if (event.code === "KeyA") sprite.velocity.left = 0;
-	else if (event.code === "KeyD") sprite.velocity.right = 0;
+	if (event.code === "KeyW" || event.code === "ArrowUp") sprite.velocity.up = 0;
+	else if (event.code === "KeyS" || event.code === "ArrowDown") sprite.velocity.down = 0;
+	else if (event.code === "KeyA" || event.code === "ArrowLeft") sprite.velocity.left = 0;
+	else if (event.code === "KeyD" || event.code === "ArrowRight") sprite.velocity.right = 0;
 });
 
 function placeObjs() {
@@ -149,20 +159,11 @@ function anyOverlap(cells) {
 function overlap(a, b) {
 	// a.x to a.x + a.width
 	// b.x to b.x + b.width
-	var wO = false;
-	var hO = false;
 
-	if (a.cord.x <= b.cord.x && a.cord.x + a.width >= b.cord.x) wO = true;
-	else if (a.cord.x <= b.cord.x + b.width && a.cord.x + a.width >= b.cord.x + b.width) wO = true;
-
-	if (a.cord.y <= b.cord.y && a.cord.y + a.height >= b.cord.y) hO = true;
-	else if (a.cord.y <= b.cord.y + b.height && a.cord.y + a.height >= b.cord.y + b.height) hO = true;
-
-	// console.log(a,b);
-	// console.log("wO",wO);
-	// console.log("hO",hO);
-
-	return wO && hO;
+	return !( a.cord.x + a.width < b.cord.x || // max a left of min b
+		a.cord.x > b.cord.x + b.width || // min a right of max b
+		a.cord.y > b.cord.y+b.height || // min a above max b
+		a.cord.y+a.height < b.cord.y ); // max a below min b
 }
 
 function newPoints(cell, canvas) {
