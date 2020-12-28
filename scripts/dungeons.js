@@ -3,7 +3,7 @@
  */
 
 var interval = null;
-var objs;
+var objs = [];
 var score=0;
 
 document.getElementById("liveSection").style.display = "inherit";
@@ -18,15 +18,22 @@ canvas.height = 10*scale;
 
 var size = 2;
 
-var a = buildCell("#0000FF", 0, 0, size*scale, size*scale);
-var b = buildCell("#FFFF00", 0, 0, size*scale, size*scale);
-var c = buildCell("#FF0000", 0, 0, size*scale, size*scale);
+for (var i=0;i<4;i++) {
+	objs.push(buildBox(0,0,size*scale,size*scale,'./images/B1.png'));
+}
+
+// var a = buildCell("#0000FF", 0, 0, size*scale, size*scale);
+// var b = buildCell("#FFFF00", 0, 0, size*scale, size*scale);
+// var c = buildCell("#FF0000", 0, 0, size*scale, size*scale);
+
 
 var keySprite = newSprite(9,30,9,30,'./images/K1.png',[0,1,2,1],5,5);
 keySprite.faces = false;
 var ghostSprite = newSprite(scale, scale, 32, 32, './images/G12.png', [0,1], 5, 5);
 
-objs = [a,b,c,ghostSprite,keySprite];
+objs.push(ghostSprite);
+objs.push(keySprite);
+
 placeObjs();
 requestAnimationFrame(renderCanvas);
 
@@ -154,16 +161,33 @@ function newSprite(spriteWidth, spriteHeight, imageWidth, imageHeight, imageURL,
 }
 
 function buildCell(color, x, y, width, height) {
-	return {
+	var cell = {
 		cord: {x: x, y: y},
 		height: height,
 		width: width,
 		color: color,
+		img: new Image(),
 		draw: function () {
 			drawCell(this);
 		},
 		move: function(){}
 	};
+	return cell;
+}
+
+function buildBox(x, y, width, height, imgUrl) {
+	var box = {
+		cord: {x: x, y: y},
+		height: height,
+		width: width,
+		img: new Image(),
+		draw: function () {
+			context.drawImage(this.img, this.cord.x, this.cord.y, this.width, this.height);
+		},
+		move: function(){}
+	};
+	box.img.src = imgUrl;
+	return box;
 }
 
 function anyOverlap(cells) {
