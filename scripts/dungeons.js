@@ -78,6 +78,54 @@ document.addEventListener('keyup', function(event) {
 	}
 });
 
+function move(direction) {
+	switch (direction) {
+		case ('up'):
+			ghostSprite.velocity.up = -1;
+			keySprite.velocity.up = -1;
+			break;
+		case ('down'):
+			ghostSprite.velocity.down = 1;
+			keySprite.velocity.down = 1;
+			break;
+		case ('left'):
+			ghostSprite.velocity.left = -1;
+			keySprite.velocity.left = -1;
+			break;
+		case ('right'):
+			ghostSprite.velocity.right = 1;
+			keySprite.velocity.right = 1;
+			break;
+		default:
+			// eh
+			break;
+	}
+}
+
+function release(direction) {
+	switch (direction) {
+		case ('up'):
+			ghostSprite.velocity.up = 0;
+			keySprite.velocity.up = 0;
+			break;
+		case ('down'):
+			ghostSprite.velocity.down = 0;
+			keySprite.velocity.down = 0;
+			break;
+		case ('left'):
+			ghostSprite.velocity.left = 0;
+			keySprite.velocity.left = 0;
+			break;
+		case ('right'):
+			ghostSprite.velocity.right = 0;
+			keySprite.velocity.right = 0;
+			break;
+		default:
+			// eh
+			break;
+	}
+}
+
 function placeObjs() {
 	do {
 		for (var i=0;i<objs.length;i++) newPoints(objs[i],canvas);
