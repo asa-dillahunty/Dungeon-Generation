@@ -78,54 +78,6 @@ document.addEventListener('keyup', function(event) {
 	}
 });
 
-function move(direction) {
-	switch (direction) {
-		case ('up'):
-			ghostSprite.velocity.up = -1;
-			keySprite.velocity.up = -1;
-			break;
-		case ('down'):
-			ghostSprite.velocity.down = 1;
-			keySprite.velocity.down = 1;
-			break;
-		case ('left'):
-			ghostSprite.velocity.left = -1;
-			keySprite.velocity.left = -1;
-			break;
-		case ('right'):
-			ghostSprite.velocity.right = 1;
-			keySprite.velocity.right = 1;
-			break;
-		default:
-			// eh
-			break;
-	}
-}
-
-function release(direction) {
-	switch (direction) {
-		case ('up'):
-			ghostSprite.velocity.up = 0;
-			keySprite.velocity.up = 0;
-			break;
-		case ('down'):
-			ghostSprite.velocity.down = 0;
-			keySprite.velocity.down = 0;
-			break;
-		case ('left'):
-			ghostSprite.velocity.left = 0;
-			keySprite.velocity.left = 0;
-			break;
-		case ('right'):
-			ghostSprite.velocity.right = 0;
-			keySprite.velocity.right = 0;
-			break;
-		default:
-			// eh
-			break;
-	}
-}
-
 function placeObjs() {
 	do {
 		for (var i=0;i<objs.length;i++) newPoints(objs[i],canvas);
@@ -299,4 +251,106 @@ function renderCanvas() {
 function updateScore() {
 	const scoreElem = document.getElementById('score');
 	scoreElem.innerHTML = `Score: ${score}`;
+}
+
+// var x = document.getElementById("gameAudio");
+
+// function playAudio() {
+//   x.play();
+// }
+
+// function pauseAudio() {
+//   x.pause();
+// }
+activateDPad();
+function activateDPad () {
+	var upArrow = document.getElementById("dPadUp");
+	upArrow.addEventListener("touchstart", function (event) {
+		event.preventDefault();
+		move('up');
+	});
+	upArrow.addEventListener("touchend", function (event) {
+		event.preventDefault();
+		release('up');
+	});
+	
+
+	var downArrow = document.getElementById("dPadDown");
+	downArrow.addEventListener("touchstart", function (event) {
+		event.preventDefault();
+		move('down');
+	});
+	downArrow.addEventListener("touchend", function (event) {
+		event.preventDefault();
+		release('down');
+	});
+
+	var leftArrow = document.getElementById("dPadLeft");
+	leftArrow.addEventListener("touchstart", function (event) {
+		event.preventDefault();
+		move('left');
+	});
+	leftArrow.addEventListener("touchend", function (event) {
+		event.preventDefault();
+		release('left');
+	});
+
+	var rightArrow = document.getElementById("dPadRight");
+	rightArrow.addEventListener("touchstart", function (event) {
+		event.preventDefault();
+		move('right');
+	});
+	rightArrow.addEventListener("touchend", function (event) {
+		event.preventDefault();
+		release('right');
+	});
+}
+
+
+function move(direction) {
+	switch(direction) {
+		case ('up'):
+			ghostSprite.velocity.up = -1;
+			keySprite.velocity.up = -1;
+			break;
+		case ('down'):
+			ghostSprite.velocity.down = 1;
+			keySprite.velocity.down = 1;
+			break;
+		case ('left'):
+			ghostSprite.velocity.left = -1;
+			keySprite.velocity.left = -1;
+			break;
+		case ('right'):
+			ghostSprite.velocity.right = 1;
+			keySprite.velocity.right = 1;
+			break;
+		default:
+			// eh
+			break;
+	}
+}
+
+function release(direction) {
+	switch (direction) {
+		case ('up'):
+			ghostSprite.velocity.up = 0;
+			keySprite.velocity.up = 0;
+			break;
+		case ('down'):
+			ghostSprite.velocity.down = 0;
+			keySprite.velocity.down = 0;
+			break;
+		case ('left'):
+			ghostSprite.velocity.left = 0;
+			keySprite.velocity.left = 0;
+			break;
+		case ('right'):
+			ghostSprite.velocity.right = 0;
+			keySprite.velocity.right = 0;
+			break;
+		default:
+			// eh
+			break;
+	}
 }

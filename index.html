@@ -35,41 +35,37 @@
 			<br/>
 			<button onclick="placeObjs()">Generate Dungeon</button>
 			<p id="score">Score: 0</p>
-			<audio controls loop>
+			<audio loop id="gameAudio" autoplay>
 				<source src="media/mainAudio1.mp3" type="audio/mpeg">
 				Your browser does not support the audio element.
 			</audio>
 
 			<div class="dPad">
-				<div class="up" 
+				<div id="dPadUp" class="up" 
 					onmousedown="move('up')"
-					onmouseup="release('up')"
-					ontouchstart="move('up')"
-					ontouchend="release('up')">
+					onmouseup="release('up')">
+					
 					<div class="arrow"></div>
 				</div>
 				
-				<div class="right" 
+				<div id="dPadRight" class="right" 
 					onmousedown="move('right')"
-					onmouseup="release('right')"
-					ontouchstart="move('right')"
-					ontouchend="release('right')">
+					onmouseup="release('right')">
+					
 					<div class="arrow"></div>
 				</div>
 				
-				<div class="down" 
+				<div id="dPadDown" class="down" 
 					onmousedown="move('down')"
-					onmouseup="release('down')"
-					ontouchstart="move('down')"
-					ontouchend="release('down')">
+					onmouseup="release('down')">
+					
 					<div class="arrow"></div>
 				</div>
 				
-				<div class="left" 
+				<div id="dPadLeft" class="left" 
 					onmousedown="move('left')"
-					onmouseup="release('left')"
-					ontouchstart="move('left')"
-					ontouchend="release('left')">
+					onmouseup="release('left')">
+					
 					<div class="arrow"></div>
 				</div>
 			</div>
