@@ -264,6 +264,9 @@ function updateScore() {
 // }
 activateDPad();
 function activateDPad () {
+	var touchSection = document.getElementById("touchSection");
+	touchSection.addEventListener("touchstart", function (event) { event.preventDefault(); });
+	
 	var upArrow = document.getElementById("dPadUp");
 	upArrow.addEventListener("touchstart", function (event) {
 		event.preventDefault();
@@ -273,7 +276,6 @@ function activateDPad () {
 		event.preventDefault();
 		release('up');
 	});
-	
 
 	var downArrow = document.getElementById("dPadDown");
 	downArrow.addEventListener("touchstart", function (event) {

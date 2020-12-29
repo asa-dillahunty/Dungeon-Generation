@@ -8,6 +8,15 @@ canvas {
 }
 
 /** D-Pad **/
+#touchSection {
+  width: 100%;
+  height: 400px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .dPad {
   position: relative;
   display: block;
