@@ -15,26 +15,29 @@
 	</head>
 
 	<body>
-		<div id="full-body">
 		<header>
 		<nav>
 			<ul>
-					<li><a href="../index.html">Home</a></li>
-					<li><a href="../projects.html">Projects</a></li>
-					<li><a href="../AsaDillahuntyResume.pdf" target="_blank">Resume</a></li>
-					<li><a href="../contact.html">Contact Me</a></li>
+				<li><a href="../index.html">Home</a></li>
+				<li><a href="../projects.html">Projects</a></li>
+				<li><a href="../AsaDillahuntyResume.pdf" target="_blank">Resume</a></li>
+				<li><a href="../contact.html">Contact Me</a></li>
 			</ul>
 		</nav>
+
 		<h1>Dungeon Generation Testing</h1>
 		</header>
 
 		<main>
 
 		<section id="liveSection">
-			<canvas id="dungeonCanvas" width="200" height="100"></canvas>
+			<div id="canvasWrapper">
+				<canvas id="dungeonCanvas" width="200" height="100"></canvas>
+				<div id="fullScreen" onclick="fullscreen()">Fullscreen</div>
+			</div>
+
 			<br/>
 			<button onclick="placeObjs()">Generate Dungeon</button>
-			<p id="score">Score: 0</p>
 			<audio loop id="gameAudio" autoplay>
 				<source src="media/mainAudio1.mp3" type="audio/mpeg">
 				Your browser does not support the audio element.
@@ -90,7 +93,6 @@
 			<br/>
 			&#169; 2020 Asa Dillahunty. All rights reserved <br/>
 		</footer>
-		</div>
 	</body>
 
 	<script src="../scripts/nav.js"></script>

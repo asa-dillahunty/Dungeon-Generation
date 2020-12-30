@@ -3,18 +3,42 @@
  */
 
 var interval = null;
+var fScreen = false;
 var objs = [];
 var score=0;
 
 document.getElementById("liveSection").style.display = "inherit";
 
-const scale = 50;
+// const scale = 50;
 
 var canvas = document.getElementById("dungeonCanvas");
 const context = canvas.getContext('2d');
 context.imageSmoothingEnabled = false;
-canvas.width = 15*scale;
-canvas.height = 10*scale;
+
+
+
+/**
+ * Lots of thinking needed here
+ * Standard computer screen ratio is 16:9
+ * 
+ * check resizeCanvas for product
+ * 
+ * I'll need a standard grid to fit on the screen for each dungeon
+ * Honestly, 16x9 wouldn't be a bad grid
+ */
+const canvasRatio = {width: 16, height: 9};
+var canvasWrapper = document.getElementById("canvasWrapper");
+var scale;
+resizeCanvas();
+canvasWrapper.addEventListener("mouseenter",function (event) {
+	document.getElementById("fullScreen").style.display = 'inherit';
+});
+canvasWrapper.addEventListener("mouseleave",function (event) {
+	document.getElementById("fullScreen").style.display = 'none';
+});
+// document.getElementById("canvasWrapper").style.display = 'none';
+
+
 
 var size = 2;
 
@@ -76,6 +100,12 @@ document.addEventListener('keyup', function(event) {
 		ghostSprite.velocity.right = 0;
 		keySprite.velocity.right = 0;
 	}
+	else if (event.key === "Escape") {
+		// event.preventDefault();
+		fScreen = false;
+		// closeFullscreen();
+		// resizeCanvas();
+	}
 });
 
 function placeObjs() {
@@ -134,6 +164,15 @@ function newSprite(spriteWidth, spriteHeight, imageWidth, imageHeight, imageURL,
 			for (var i=0;i<objs.length;i++) {
 				if (objs[i] === this || objs[i].permeable) continue;
 				else if (overlap(this,objs[i])) {
+					// TODO: get as close to this object as allowed
+
+					// Bug - down left cannot glide across blocks
+					// this is because when you meet at a corner, it chooses to sacrifice 
+					// horizontal motion before vertical, and then later on, the other block
+					// doesn't allow you to go down, voiding both motions
+					// This could be fixed using two for loops instead of one, but the time
+					// is already so high. I'm leaving this bug until a more clever solution can be found
+
 					this.cord.x -= this.stepSize * (this.velocity.right + this.velocity.left);
 					if (!overlap(this,objs[i])) continue;
 					else this.cord.x += this.stepSize * (this.velocity.right + this.velocity.left);
@@ -143,6 +182,13 @@ function newSprite(spriteWidth, spriteHeight, imageWidth, imageHeight, imageURL,
 					else this.cord.x -= this.stepSize * (this.velocity.right + this.velocity.left);
 				}
 			}
+			/**
+			 * This handles wrapping around the edges of the canvas
+			 * 
+			 * Eventually this code will lose its purpose
+			 * I use const here because these values never change so long
+			 * as canvas.width/height never change, which currently they don't
+			 */
 
 			const w = Math.floor(this.width/this.stepSize);
 			const ws = w*this.stepSize;
@@ -234,6 +280,9 @@ function renderCanvas() {
 	else frameCount = 0;
 
 	context.clearRect(0, 0, canvas.width, canvas.height);
+	context.fillStyle = "#EEEEEE";
+	context.fillRect(0,0,canvas.width,canvas.height);
+
 	context.imageSmoothingEnabled = false;
 
 	for (var i=0;i<objs.length;i++) {
@@ -242,15 +291,59 @@ function renderCanvas() {
 	}
 	if (overlap(keySprite, ghostSprite)) {
 		score++;
-		updateScore();
 		placeObjs();
 	}
+	drawScore();
 	requestAnimationFrame(renderCanvas);
 }
 
-function updateScore() {
-	const scoreElem = document.getElementById('score');
-	scoreElem.innerHTML = `Score: ${score}`;
+context.font = "30px Arial";
+function drawScore() {
+	context.fillStyle = "#FFFFFF55";
+	context.fillRect(5,15,200,50);
+
+	context.fillStyle = "black";
+	context.fillText(`Score: ${score}`, 10, 50);
+}
+
+function fullscreen(){
+	fScreen = true;
+	// resizeCanvas();
+
+	if(canvas.webkitRequestFullScreen) {
+		canvas.webkitRequestFullScreen();
+	}
+	else {
+		canvas.mozRequestFullScreen();
+	}
+}
+
+function closeFullscreen() {
+	if (document.exitFullscreen) {
+		document.exitFullscreen();
+	} else if (document.webkitExitFullscreen) { /* Safari */
+		document.webkitExitFullscreen();
+	} else if (document.msExitFullscreen) { /* IE11 */
+		document.msExitFullscreen();
+	}
+}
+
+function resizeCanvas() {
+	var sw = Math.floor(window.innerWidth/canvasRatio.width);
+	var sh = Math.floor(window.innerHeight/canvasRatio.height);
+	// scale is the min between the two
+	scale = sw < sh ? sw : sh;
+	
+	// we want a little bit of spacing on the sides of the canvas,
+	// so we make scale 80% of what it could be so we take up at most
+	// 80% of the width and 80% of the height of the window, probably
+	if (!fScreen) scale = Math.floor(scale*.8);
+
+	canvas.width = Math.floor(scale * canvasRatio.width);
+	canvas.height = Math.floor(scale * canvasRatio.height);
+	
+	canvasWrapper.style.width = canvas.width+'px';
+	canvasWrapper.style.height = canvas.height+'px';
 }
 
 // var x = document.getElementById("gameAudio");
@@ -307,7 +400,6 @@ function activateDPad () {
 		release('right');
 	});
 }
-
 
 function move(direction) {
 	switch(direction) {
