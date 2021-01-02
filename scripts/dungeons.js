@@ -12,6 +12,12 @@ document.getElementById("liveSection").style.display = "inherit";
 // const scale = 50;
 
 var canvas = document.getElementById("dungeonCanvas");
+document.addEventListener('fullscreenchange', function () { 
+	console.log("What");
+	fScreen = !fScreen;
+	resizeCanvas();
+});
+
 const context = canvas.getContext('2d');
 context.imageSmoothingEnabled = false;
 
@@ -99,12 +105,6 @@ document.addEventListener('keyup', function(event) {
 	else if (event.code === "KeyD" || event.code === "ArrowRight") {
 		ghostSprite.velocity.right = 0;
 		keySprite.velocity.right = 0;
-	}
-	else if (event.key === "Escape") {
-		// event.preventDefault();
-		fScreen = false;
-		// closeFullscreen();
-		// resizeCanvas();
 	}
 });
 
@@ -297,40 +297,40 @@ function renderCanvas() {
 	requestAnimationFrame(renderCanvas);
 }
 
-context.font = "30px Arial";
 function drawScore() {
+	var s2 = Math.floor(scale/2);
+	var st = scale/5; // 20% of scale, used for padding 
+	context.font = `${s2}px Arial`;
 	context.fillStyle = "#FFFFFF55";
-	context.fillRect(5,15,200,50);
+	context.fillRect(s2 - st,scale - s2 - st,scale*3,scale);
 
 	context.fillStyle = "black";
-	context.fillText(`Score: ${score}`, 10, 50);
+	context.fillText(`Score: ${score}`, s2, scale);
 }
 
-function fullscreen(){
-	fScreen = true;
-	// resizeCanvas();
-
-	if(canvas.webkitRequestFullScreen) {
-		canvas.webkitRequestFullScreen();
-	}
-	else {
-		canvas.mozRequestFullScreen();
-	}
+function fullscreen() {
+	if (canvas.requestFullscreen) canvas.requestFullscreen();
+	else if(canvas.webkitRequestFullScreen) canvas.webkitRequestFullScreen();
+	else canvas.mozRequestFullScreen();
 }
 
 function closeFullscreen() {
-	if (document.exitFullscreen) {
-		document.exitFullscreen();
-	} else if (document.webkitExitFullscreen) { /* Safari */
-		document.webkitExitFullscreen();
-	} else if (document.msExitFullscreen) { /* IE11 */
-		document.msExitFullscreen();
-	}
+	if (document.exitFullscreen) document.exitFullscreen();
+	else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); /* Safari */
+	else if (document.msExitFullscreen) document.msExitFullscreen(); /* IE11 */
 }
 
 function resizeCanvas() {
-	var sw = Math.floor(window.innerWidth/canvasRatio.width);
-	var sh = Math.floor(window.innerHeight/canvasRatio.height);
+	var sw;
+	var sh;
+	if (!fScreen) {
+		sw = Math.floor(window.innerWidth/canvasRatio.width);
+		sh = Math.floor(window.innerHeight/canvasRatio.height);
+	}
+	else {
+		sw = Math.floor(screen.width/canvasRatio.width);
+		sh = Math.floor(screen.height/canvasRatio.height);
+	}
 	// scale is the min between the two
 	scale = sw < sh ? sw : sh;
 	

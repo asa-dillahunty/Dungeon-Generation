@@ -10,6 +10,10 @@ body {
 	padding: 0;
 }
 
+svg {
+	color: black;
+}
+
 /* If javascript is not enabled, this won't be shown */
 #liveSection {
 	display: none;
@@ -27,9 +31,8 @@ body {
 	position: absolute;
 	bottom: 0;
 	right: 0;
-	background-color: lightgray;
-	border: 3px ridge;
-	padding: 3px 5px 3px 5px;
+	padding: 10px;
+	border: none;
 
 	cursor: pointer;
 }

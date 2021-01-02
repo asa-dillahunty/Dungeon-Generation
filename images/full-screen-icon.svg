@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 30 30" style="enable-background:new 0 0 30 30;" xml:space="preserve">
+<g>
+	<rect x="0.5" y="0.5" width="9" height="4"/>
+	<path d="M9,1v3H1V1H9 M10,0H0v5h10V0L10,0z"/>
+</g>
+<g>
+	<rect x="20.5" y="25.5" width="9" height="4"/>
+	<path d="M29,26v3h-8v-3H29 M30,25H20v5h10V25L30,25z"/>
+</g>
+<g>
+	<rect x="20.5" y="0.5" width="9" height="4"/>
+	<path d="M29,1v3h-8V1H29 M30,0H20v5h10V0L30,0z"/>
+</g>
+<g>
+	<rect x="0.5" y="25.5" width="9" height="4"/>
+	<path d="M9,26v3H1v-3H9 M10,25H0v5h10V25L10,25z"/>
+</g>
+<g>
+	<rect x="0.5" y="5.5" width="4" height="4"/>
+	<path d="M4,6v3H1V6H4 M5,5H0v5h5V5L5,5z"/>
+</g>
+<g>
+	<rect x="0.5" y="20.5" width="4" height="4"/>
+	<path d="M4,21v3H1v-3H4 M5,20H0v5h5V20L5,20z"/>
+</g>
+<g>
+	<rect x="25.5" y="5.5" width="4" height="4"/>
+	<path d="M29,6v3h-3V6H29 M30,5h-5v5h5V5L30,5z"/>
+</g>
+<g>
+	<rect x="25.5" y="20.5" width="4" height="4"/>
+	<path d="M29,21v3h-3v-3H29 M30,20h-5v5h5V20L30,20z"/>
+</g>
+</svg>
