@@ -57,9 +57,9 @@ for (var i=0;i<4;i++) {
 // var c = buildCell("#FF0000", 0, 0, size*scale, size*scale);
 
 
-var keySprite = newSprite(.3,1,9,30,'./images/K1.png',[0,1,2,1],5,.15);
+var keySprite = newSprite(.3,1,9,30,'./images/K1.png',[0,1,2,1],5,.1);
 keySprite.faces = false;
-var ghostSprite = newSprite(1,1,32,32,'./images/G12.png',[0,1],5,.15);
+var ghostSprite = newSprite(1,1,32,32,'./images/G12.png',[0,1],5,.1);
 
 objs.push(ghostSprite);
 objs.push(keySprite);
@@ -83,6 +83,10 @@ document.addEventListener('keydown', function(event) {
 	else if (event.code === "KeyD" || event.code === "ArrowRight") {
 		ghostSprite.velocity.right = 1;
 		keySprite.velocity.right = 1;
+	}
+	else if (event.code === "Space") {
+		// for debugging
+		for (var i=0;i<objs.length;i++) console.log(objs[i]);
 	}
 	else return;
 
@@ -161,6 +165,13 @@ function newSprite(spriteWidth, spriteHeight, imageWidth, imageHeight, imageURL,
 			this.cord.x += this.stepSize * (this.velocity.right + this.velocity.left);
 			this.cord.y += this.stepSize * (this.velocity.up + this.velocity.down);
 
+			// make sure fits tens place
+			// this could be fixed another way, multiply everything by ten ? 
+			// Definitely has a needless negative impact on performance, 
+			// 	especially since I have to do it up to four more times
+			this.cord.x = Math.round(this.cord.x * 10) / 10;
+			this.cord.y = Math.round(this.cord.y * 10) / 10;
+
 			for (var i=0;i<objs.length;i++) {
 				if (objs[i] === this || objs[i].permeable) continue;
 				else if (overlap(this,objs[i])) {
@@ -174,12 +185,16 @@ function newSprite(spriteWidth, spriteHeight, imageWidth, imageHeight, imageURL,
 					// is already so high. I'm leaving this bug until a more clever solution can be found
 
 					this.cord.x -= this.stepSize * (this.velocity.right + this.velocity.left);
+					this.cord.x = Math.round(this.cord.x * 10) / 10; // round properly
 					if (!overlap(this,objs[i])) continue;
 					else this.cord.x += this.stepSize * (this.velocity.right + this.velocity.left);
+					this.cord.x = Math.round(this.cord.x * 10) / 10; // round properly
 
 					this.cord.y -= this.stepSize * (this.velocity.up + this.velocity.down);
+					this.cord.y = Math.round(this.cord.y * 10) / 10; // round properly
 					if (!overlap(this,objs[i])) continue;
 					else this.cord.x -= this.stepSize * (this.velocity.right + this.velocity.left);
+					this.cord.x = Math.round(this.cord.x * 10) / 10; // round properly
 				}
 			}
 			/**
@@ -255,11 +270,10 @@ function overlap(a, b) {
 		a.cord.y+a.height <= b.cord.y ); // max a below min b
 }
 
-function newPoints(cell, canvas) {
+function newPoints(cell) {
 	// have every point be a multiple of scale
 	cell.cord.y = Math.floor( (Math.random() * (canvasRatio.height - cell.height) ) );
 	cell.cord.x = Math.floor( (Math.random() * (canvasRatio.width - cell.width) ) );
-	console.log(cell.cord);
 }
 
 function drawCell(cell) {
