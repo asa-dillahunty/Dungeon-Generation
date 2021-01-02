@@ -49,7 +49,7 @@ canvasWrapper.addEventListener("mouseleave",function (event) {
 var size = 2;
 
 for (var i=0;i<4;i++) {
-	objs.push(buildBox(0,0,size*scale,size*scale,'./images/B1.png'));
+	objs.push(buildBox(0,0,size,size,'./images/B1.png'));
 }
 
 // var a = buildCell("#0000FF", 0, 0, size*scale, size*scale);
@@ -57,9 +57,9 @@ for (var i=0;i<4;i++) {
 // var c = buildCell("#FF0000", 0, 0, size*scale, size*scale);
 
 
-var keySprite = newSprite(9,30,9,30,'./images/K1.png',[0,1,2,1],5,5);
+var keySprite = newSprite(.3,1,9,30,'./images/K1.png',[0,1,2,1],5,.15);
 keySprite.faces = false;
-var ghostSprite = newSprite(scale, scale, 32, 32, './images/G12.png', [0,1], 5, 5);
+var ghostSprite = newSprite(1,1,32,32,'./images/G12.png',[0,1],5,.15);
 
 objs.push(ghostSprite);
 objs.push(keySprite);
@@ -147,7 +147,7 @@ function newSprite(spriteWidth, spriteHeight, imageWidth, imageHeight, imageURL,
 				if (this.velocity.left == -1) this.facing = 1;
 				else if (this.velocity.right) this.facing = 0;
 
-			context.drawImage(this.img, this.imgW*(this.frameArr[this.frameIndex]), this.imgH*this.facing, this.imgW, this.imgH, this.cord.x, this.cord.y, this.width, this.height);
+			context.drawImage(this.img, this.imgW*(this.frameArr[this.frameIndex]), this.imgH*this.facing, this.imgW, this.imgH, this.cord.x*scale, this.cord.y*scale, this.width*scale, this.height*scale);
 			
 			// This means the key animates at a fifth of the pace of the game clock
 			this.frameCount++;
@@ -189,16 +189,15 @@ function newSprite(spriteWidth, spriteHeight, imageWidth, imageHeight, imageURL,
 			 * I use const here because these values never change so long
 			 * as canvas.width/height never change, which currently they don't
 			 */
+			const w = this.width*this.stepSize;
+			const ws = w/this.stepSize;
+			if (this.cord.x > canvasRatio.width - w) this.cord.x = -ws;
+			else if (this.cord.x < -ws) this.cord.x = canvasRatio.width - w;
 
-			const w = Math.floor(this.width/this.stepSize);
-			const ws = w*this.stepSize;
-			if (this.cord.x > canvas.width - w) this.cord.x = -ws;
-			else if (this.cord.x < -ws) this.cord.x = canvas.width - w;
-
-			const h = Math.floor (this.height/this.stepSize);
-			const hs = h*this.stepSize;
-			if (this.cord.y > canvas.height - h) this.cord.y = -hs;
-			else if (this.cord.y < -hs) this.cord.y = canvas.height - h;
+			const h = this.height*this.stepSize;
+			const hs = h/this.stepSize;
+			if (this.cord.y > canvasRatio.height - h) this.cord.y = -hs;
+			else if (this.cord.y < -hs) this.cord.y = canvasRatio.height - h;
 		},
 		stepSize: stepSize
 	}
@@ -228,7 +227,7 @@ function buildBox(x, y, width, height, imgUrl) {
 		width: width,
 		img: new Image(),
 		draw: function () {
-			context.drawImage(this.img, this.cord.x, this.cord.y, this.width, this.height);
+			context.drawImage(this.img, this.cord.x*scale, this.cord.y*scale, this.width*scale, this.height*scale);
 		},
 		move: function(){}
 	};
@@ -258,13 +257,14 @@ function overlap(a, b) {
 
 function newPoints(cell, canvas) {
 	// have every point be a multiple of scale
-	cell.cord.y = Math.floor( (Math.random() * (canvas.height - cell.height) ) / scale) * scale;
-	cell.cord.x = Math.floor( (Math.random() * (canvas.width - cell.width) ) / scale) * scale;
+	cell.cord.y = Math.floor( (Math.random() * (canvasRatio.height - cell.height) ) );
+	cell.cord.x = Math.floor( (Math.random() * (canvasRatio.width - cell.width) ) );
+	console.log(cell.cord);
 }
 
 function drawCell(cell) {
 	context.fillStyle = cell.color;
-	context.fillRect(cell.cord.x,cell.cord.y,cell.width,cell.height);
+	context.fillRect(cell.cord.x*scale,cell.cord.y*scale,cell.width,cell.height);
 }
 
 var frameCount=0;
