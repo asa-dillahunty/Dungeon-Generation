@@ -4,7 +4,9 @@
 
 var interval = null;
 var fScreen = false;
+var sprites = [];
 var objs = [];
+
 var score=0;
 
 document.getElementById("liveSection").style.display = "inherit";
@@ -13,7 +15,6 @@ document.getElementById("liveSection").style.display = "inherit";
 
 var canvas = document.getElementById("dungeonCanvas");
 document.addEventListener('fullscreenchange', function () { 
-	console.log("What");
 	fScreen = !fScreen;
 	resizeCanvas();
 });
@@ -63,6 +64,8 @@ var ghostSprite = newSprite(1,1,32,32,'./images/G12.png',[0,1],5,.1);
 
 objs.push(ghostSprite);
 objs.push(keySprite);
+// sprites.push(ghostSprite);
+// sprites.push(keySprite);
 
 placeObjs();
 requestAnimationFrame(renderCanvas);
@@ -146,6 +149,7 @@ function newSprite(spriteWidth, spriteHeight, imageWidth, imageHeight, imageURL,
 		frameIndex: 0,
 		frameArr: frameArray,
 		frameRatio: frameRatio,
+		stepSize: stepSize,
 		draw: function() {
 			if (this.faces)
 				if (this.velocity.left == -1) this.facing = 1;
@@ -214,8 +218,9 @@ function newSprite(spriteWidth, spriteHeight, imageWidth, imageHeight, imageURL,
 			if (this.cord.y > canvasRatio.height - h) this.cord.y = -hs;
 			else if (this.cord.y < -hs) this.cord.y = canvasRatio.height - h;
 		},
-		stepSize: stepSize
 	}
+
+
 	sprite.img.src = imageURL;
 	return sprite;
 }
@@ -235,6 +240,11 @@ function buildCell(color, x, y, width, height) {
 	return cell;
 }
 
+function drawCell(cell) {
+	context.fillStyle = cell.color;
+	context.fillRect(cell.cord.x*scale,cell.cord.y*scale,cell.width*scale,cell.height*scale);
+}
+
 function buildBox(x, y, width, height, imgUrl) {
 	var box = {
 		cord: {x: x, y: y},
@@ -243,8 +253,7 @@ function buildBox(x, y, width, height, imgUrl) {
 		img: new Image(),
 		draw: function () {
 			context.drawImage(this.img, this.cord.x*scale, this.cord.y*scale, this.width*scale, this.height*scale);
-		},
-		move: function(){}
+		}
 	};
 	box.img.src = imgUrl;
 	return box;
@@ -254,7 +263,9 @@ function anyOverlap(cells) {
 	// test every combination
 	for (var i=0;i<cells.length-1;i++) {
 		for (var j=i+1;j<cells.length;j++) {
-			if (overlap(cells[i],cells[j])) return true;
+			if (overlap(cells[i],cells[j])) {
+				return true;
+			}
 		}
 	}
 	return false;
@@ -276,11 +287,6 @@ function newPoints(cell) {
 	cell.cord.x = Math.floor( (Math.random() * (canvasRatio.width - cell.width) ) );
 }
 
-function drawCell(cell) {
-	context.fillStyle = cell.color;
-	context.fillRect(cell.cord.x*scale,cell.cord.y*scale,cell.width,cell.height);
-}
-
 var frameCount=0;
 var fps = 20;
 var fCount = Math.floor(60/fps);
@@ -300,7 +306,7 @@ function renderCanvas() {
 	context.imageSmoothingEnabled = false;
 
 	for (var i=0;i<objs.length;i++) {
-		objs[i].move();
+		if (objs[i].move) objs[i].move();
 		objs[i].draw();
 	}
 	if (overlap(keySprite, ghostSprite)) {
@@ -461,4 +467,155 @@ function release(direction) {
 			// eh
 			break;
 	}
+}
+
+// path finding
+function AStar(obj) {
+	// using push and pop on a typical
+	// javascript array should act like a stack
+
+	var start = buildCell("#0000FF", 0, 0, 1, 1);
+	var end = {
+		cord: {x:canvasRatio.width-1,y:canvasRatio.height-1},
+	};
+
+	var curr = start;
+	var path = [];
+	var points = newPriorityQueue();
+	points.add(start,0);
+	var touched = [];
+	
+	while (points.head) {
+		curr = points.pop();
+		touched.push(curr);
+		// console.log(points);
+		if (curr.cord.x == end.cord.x && curr.cord.y == end.cord.y) {
+			path.push(curr);
+			break;
+		}
+
+		pos = getPos(curr,touched);
+		if (pos.length < 1) {
+			path.pop();
+		}
+		path.push(curr);
+
+		// this part needs to be randomized
+		pos = scramble(pos);
+		for (var i=0;i<pos.length;i++) {
+			points.add(pos[i], Math.abs(end.cord.x - pos[i].cord.x) + Math.abs(end.cord.y - pos[i].cord.y));
+		}
+		// console.log(curr);
+		// break;
+	}
+	
+	for (var i=0;i<path.length;i++) {
+		objs.push(path[i]);
+	}
+
+	// var a = buildCell("#0000FF", 0, 0, size*scale, size*scale);
+	// objs.push(a);
+}
+
+// AStar(null);
+
+function getPos(point,touched) {
+	var pos = [];
+	var deltas = [{dx:0,dy:1},{dx:1,dy:0}];
+
+	for (var i=-1;i<2;i+=2) {
+		for (var j=0;j<deltas.length;j++) {
+			var thing = buildCell("#0000FF", point.cord.x + deltas[j].dx * i, point.cord.y + deltas[j].dy * i,1,1)
+
+			objs.push(thing);
+			if (inBounds(thing) && !anyOverlap(objs) && !hasPoint(thing,touched)) pos.push(thing);
+			objs.pop();
+		}
+	}
+
+	return pos;
+}
+
+function hasPoint(point,points) {
+	for (var i=0;i<points.length;i++) {
+		if (point.cord.x == points[i].cord.x && point.cord.y == points[i].cord.y) return true;
+	}
+	return false;
+}
+
+function inBounds(obj) {
+	if (obj.cord.x > canvasRatio.width || obj.cord.y > canvasRatio.height || obj.cord.x < 0 || obj.cord.y < 0) return false;
+	else return true;
+}
+
+function scramble(array) {
+	var randomList = newPriorityQueue();
+	for (var i=0;i<array.length;i++) {
+		randomList.add(array[i],Math.random());
+	}
+	return randomList.toArray();
+}
+
+// thing = [1,2,3];
+// console.log(scramble(thing));
+// console.log(getPos({x:1,y:1},[{x:1,y:0}]));
+
+
+function newPriorityQueue() {
+	return {
+		head:null,
+		size:0,
+		add: function(obj, priority) {
+			var node = {val: obj, weight: priority, next: null}
+
+			this.size++;
+			if (this.head == null) {
+				this.head = node;
+			}
+			else if (node.weight < this.head.weight) {
+				node.next = this.head;
+				this.head = node;
+			}
+			else {
+				var curr = this.head;
+				while (curr.next && curr.next.weight < node.weight) {
+					curr = curr.next;
+				}
+				node.next = curr.next;
+				curr.next = node;
+			}
+		},
+		pop: function() {
+			this.size--;
+			var temp = this.head;
+			this.head = this.head.next;
+			return temp.val;
+		},
+		contains: function(point) {
+			// used for a point obj
+			var curr = this.head;
+			while (curr) {
+				if (curr.val.x == point.x && curr.val.y == point.y) return true;
+				curr = curr.next;
+			}
+			return false;
+		},
+		toArray: function() {
+			var arr = [];
+			var curr = this.head;
+			while (curr) {
+				arr.push(curr.val);
+				curr = curr.next;
+			}
+
+			return arr;
+		},
+		print: function() {
+			var curr = this.head;
+			while (curr) {
+				console.log(curr.val);
+				curr = curr.next;
+			}
+		}
+	};
 }
